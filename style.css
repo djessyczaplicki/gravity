@@ -8,6 +8,10 @@ html, body {
     padding: 0;
 }
 
+main {
+    height: 200px;
+}
+
 canvas {
     z-index: -1;
     display: block;
@@ -20,7 +24,16 @@ canvas {
 }
 
 #menu {
+    margin-top: 20px;
     display:block;
-    width: 170px;
+    width: 300px;
     margin: 0 auto;
+}
+
+label {
+    color: white;
+}
+
+input {
+    width: 120px;
 }
