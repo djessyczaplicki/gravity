@@ -9,6 +9,10 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+::selection { 
+    color: none;
+    background: none; }
+
 html, body {
     margin: 0;
     padding: 0;
