@@ -11,7 +11,8 @@
 
 ::selection { 
     color: none;
-    background: none; }
+    background: none; 
+}
 
 html, body {
     margin: 0;
@@ -34,7 +35,20 @@ canvas {
 }
 
 button {
-    padding: 2px;
+    padding: 3px;
+    margin: 2px;
+    background-color: #3297FD;
+    color: white;
+    border-radius: 5px;
+    border:none;
+}
+
+button:hover {
+    background-color: #236db6;
+}
+
+button:active {
+    background-color: #194e83;
 }
 
 #menu {
@@ -42,7 +56,7 @@ button {
     border-radius: 10px;
     padding: 10px;
     display:block;
-    width: 300px;
+    width: 350px;
     margin: 0 auto;
 }
 
@@ -52,6 +66,11 @@ label {
 
 input {
     width: 120px;
+}
+
+input::selection { 
+    color: #ffffff;
+    background: #3297FD; 
 }
 
 /* from https://codepen.io/markmead/pen/rNOqRNw */

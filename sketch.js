@@ -1,5 +1,9 @@
-let seed = localStorage.getItem("level") | 1;
-let showSeed = localStorage.getItem("showSeed") == "true" | false;
+if (localStorage.getItem("firstTime") == null) {
+    help();
+    localStorage.setItem("firstTime", true);
+}
+let seed = localStorage.getItem("level") || 204296979;
+let showSeed = localStorage.getItem("showSeed") == "true" || false;
 const divSeed = document.getElementById("divSeed");
 divSeed.style.display = (showSeed == true)?"inline":"none";
 const lblSeed = document.getElementById("lblSeed");
@@ -7,22 +11,24 @@ lblSeed.textContent = seed;
 const inptSeed = document.getElementById("inptSeed");
 const winTextDiv = document.getElementById("winTextDiv");
 const loseTextDiv = document.getElementById("loseTextDiv");
-let directionalVector = localStorage.getItem("debug") == "true" | false;
+let directionalVector = localStorage.getItem("debug") == "true" || false;
 let ball;
-let debug = (localStorage.getItem("debug") == "true") | false;
+let debug = (localStorage.getItem("debug") == "true") || false;
 let cameraActive = false;
 const winSound = new Audio("sounds/winSound.wav");
 const loseSound = new Audio("sounds/lose-sound.wav");
 
 let hasShot = false;
-let planetSprites = [];
-let planets = [];
+const planetSprites = [];
+const planets = [];
+const stars = [];
 let frame = 0;
 let speed = 0;
 let destX = 0;
 let destY = 0;
 let degree = 0;
 const numPlanets = 8; // max 8;
+const starsNum = 500; // LOWER THIS IF LAGGY
 let isPressed;
 function preload() {
     ball = createSprite(200, 200, 20, 20);
@@ -66,6 +72,19 @@ class Planet {
     }
 }
 
+class Star {
+    constructor() {
+        this.x = random(-500, windowWidth+500);
+        this.y = random(-500, windowHeight+500);
+        this.size = random(1,3);
+    }
+
+    draw() {
+        fill(255);
+        ellipse(this.x, this.y, this.size);
+    }
+}
+
 function generateLevel() {
     for (let i = 0; i < numPlanets; i++) {
         const ref = BigInt(seed) ** BigInt(i+1);
@@ -77,6 +96,15 @@ function generateLevel() {
         if (debug == true) {
             p.drawGravitationalField();
         }
+        for (pla of planets) { // Avoid Overlaps
+            if (pla.sprite == null) continue;
+            p.sprite.overlap(pla.sprite, () => {
+                i--;
+                seed++;
+                p.sprite.remove();
+                console.log("overlap");
+            })
+        }
     }
 }
 
@@ -84,6 +112,9 @@ function setup() {
     createCanvas(windowWidth, windowHeight);
     generateLevel();
     ball.addAnimation('bola', 'assets/ball_01.png', 'assets/ball_10.png');
+    for (let i = 0; i < starsNum; i++) {
+        stars.push(new Star());
+    }
 }
 
 
@@ -91,6 +122,9 @@ function draw() {
     background(10,10,12);
     degree = ball.getDirection();
     ball.setSpeed(speed, degree);
+    for (star of stars) {
+        star.draw();
+    }
 
     if (isPressed) {
         stroke(255);
@@ -114,11 +148,9 @@ function draw() {
             ball.overlap(planet.sprite, win);
         }
     }
-
     planet.gfSpr;
     frame++;
     drawSprites();
-
     // Directional Vector
     if (directionalVector) {
         stroke(0,255,0);
@@ -167,10 +199,9 @@ function mouseReleased() {
     cameraActive = true;
 }
 
-
-
 function setSeed(seed) {
     localStorage.setItem("level", seed);
+    alert(localStorage.getItem("level"));
     window.location.reload();
 }
 
@@ -215,7 +246,8 @@ function win(ball, earth) {
         if (showSeed == false) alert("You discovered an Easter Egg, now you can use the seeds to save your favourite maps :)")
         toggleSeed();
     });
-    setInterval(() => movingSound.pause(), 1000)
+    setInterval(() => movingSound.pause(), 1000);
+    winSound.play();
 }
 
 function lose() {
@@ -226,6 +258,7 @@ function lose() {
 
 
 // dom
+const btnHelp = document.getElementById("btnHelp");
 const btn1 = document.getElementById("btn1");
 const btn2 = document.getElementById("btn2");
 const btn3 = document.getElementById("btn3");
@@ -237,6 +270,10 @@ let music = document.getElementById("music");
 
 volume.value = localStorage.getItem("volume");
 // events
+btnHelp.addEventListener('click', help);
+function help(e) {
+    alert("\n---Welcome to Gravity !---\n\nYou are a lost ball in space, and you have to reach back the earth in order to win!\n\nHelp yourself with the gravity of the planets to redirect your trajectory and get home!");
+}
 btn1.addEventListener('click', e => {
     localStorage.setItem("level", 204296979);
     window.location.reload();
@@ -250,7 +287,7 @@ btn3.addEventListener('click', e => {
     window.location.reload();
 });
 btn4.addEventListener('click', e => {
-    localStorage.setItem("level", random(100, 999999999));
+    localStorage.setItem("level", int(random(100, 999999999)));
     window.location.reload();
 });
 btn5.addEventListener('click', e => {
@@ -259,11 +296,17 @@ btn5.addEventListener('click', e => {
 inptSeed.addEventListener("keypress", e => {
     if (e.key == "Enter") {
         setSeed(inptSeed.value);
+
         window.location.reload();
     }
 });
 lblSeed.addEventListener("click", e => {
-    lblSeed.select();
+    const el = document.createElement('textarea');
+    el.value = seed;	//str is your string to copy
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');	// Copy command
+    document.body.removeChild(el);
     document.execCommand('copy');
     alert("Copied!");
 });
@@ -272,7 +315,6 @@ menu.addEventListener("mouseenter", e => {
 });
 menu.addEventListener("mousedown", e => {
     setTimeout(() => isPressed = false, 1);
-    
 })
 volume.addEventListener("change", e => {
     music.setVolume(volume.value);
