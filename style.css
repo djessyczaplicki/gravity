@@ -55,7 +55,7 @@ input {
 }
 
 /* from https://codepen.io/markmead/pen/rNOqRNw */
-.winText {
+.text {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -72,28 +72,28 @@ input {
     -webkit-text-stroke-color: black;
 }
 
-.winText:nth-of-type(1) {
+.text:nth-of-type(1) {
     -webkit-animation-duration: 2s;
           animation-duration: 2s;
     -webkit-animation-delay: 0.55s;
           animation-delay: 0.55s;
 }
 
-.winText:nth-of-type(2) {
+.text:nth-of-type(2) {
     -webkit-animation-duration: 2s;
           animation-duration: 2s;
     -webkit-animation-delay: 0.3s;
           animation-delay: 0.3s;
 }
 
-.winText:nth-of-type(3) {
+.text:nth-of-type(3) {
     -webkit-animation-duration: 2s;
           animation-duration: 2s;
     -webkit-animation-delay: 0.05s;
           animation-delay: 0.05s;
 }
 
-.winText:nth-of-type(4) {
+.text:nth-of-type(4) {
     -webkit-animation-duration: 2s;
           animation-duration: 2s;
     -webkit-animation-delay: -0.2s;

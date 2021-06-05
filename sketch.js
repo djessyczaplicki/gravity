@@ -6,13 +6,15 @@ const lblSeed = document.getElementById("lblSeed");
 lblSeed.textContent = seed;
 const inptSeed = document.getElementById("inptSeed");
 const winTextDiv = document.getElementById("winTextDiv");
+const loseTextDiv = document.getElementById("loseTextDiv");
 let directionalVector = localStorage.getItem("debug") == "true" | false;
 let ball;
 let debug = (localStorage.getItem("debug") == "true") | false;
 let cameraActive = false;
 const winSound = new Audio("sounds/winSound.wav");
+const loseSound = new Audio("sounds/lose-sound.wav");
 
-
+let hasShot = false;
 let planetSprites = [];
 let planets = [];
 let frame = 0;
@@ -68,7 +70,7 @@ function generateLevel() {
     for (let i = 0; i < numPlanets; i++) {
         const ref = BigInt(seed) ** BigInt(i+1);
         const p = planets[i];
-        p.sprite = createSprite(Number(ref % 1200n + 100n), Number(ref * 5n % 700n + 100n), 10, 10);
+        p.sprite = createSprite(Number((ref % 1200n + 100n)*BigInt(windowWidth)/1920n), Number((ref * 5n % 700n + 100n)*BigInt(windowHeight)/1080n), 10, 10);
         p.sprite.setCollider("circle", 0, 0, p.size);
         p.sprite.addImage(planetSprites[i]);
         // Draw gravity outline
@@ -83,7 +85,6 @@ function setup() {
     generateLevel();
     ball.addAnimation('bola', 'assets/ball_01.png', 'assets/ball_10.png');
 }
-
 
 
 function draw() {
@@ -103,7 +104,10 @@ function draw() {
         if (d < planet.gravitationalField / 2) {
             ball.attractionPoint((planet.gravitationalField / 2 - d) / 1000, planet.sprite.position.x, planet.sprite.position.y);
         }
-
+        if (ball.position.x < 0 || ball.position.y < 0 
+            || ball.position.x > windowWidth || ball.position.y > windowHeight) {
+                lose();
+            }
         // setting earth as the goal
         if (planets.indexOf(planet) != 0) ball.collide(planet.sprite);
         else {
@@ -135,11 +139,14 @@ function windowResized() {
 }
 
 function mousePressed() {
+    if (hasShot && debug == false) return;
     isPressed = true;
 }
 
 function mouseReleased() {
+    if (!isPressed) return;
     isPressed = false;
+    hasShot = true;
 
     // delta = destination - origin -> deltaX = x2 - x1
     const deltaX = destX - ball.position.x;
@@ -204,15 +211,31 @@ function win(ball, earth) {
     camTranslate(earth.position.x, earth.position.y);
     winTextDiv.style.display = "block";
     winTextDiv.style.opacity = "1";
-    winSound.play();
+    document.getElementById("joamba").addEventListener("click", e => {
+        if (showSeed == false) alert("You discovered an Easter Egg, now you can use the seeds to save your favourite maps :)")
+        toggleSeed();
+    });
+    setInterval(() => movingSound.pause(), 1000)
 }
+
+function lose() {
+    loseTextDiv.style.display = "block";
+    loseTextDiv.style.opacity = "1";
+    loseSound.play();
+}
+
 
 // dom
 const btn1 = document.getElementById("btn1");
 const btn2 = document.getElementById("btn2");
 const btn3 = document.getElementById("btn3");
 const btn4 = document.getElementById("btn4");
+const btn5 = document.getElementById("btn5");
+const menu = document.getElementById("menu");
+const volume = document.getElementById("volume");
+let music = document.getElementById("music");
 
+volume.value = localStorage.getItem("volume");
 // events
 btn1.addEventListener('click', e => {
     localStorage.setItem("level", 204296979);
@@ -223,10 +246,14 @@ btn2.addEventListener('click', e => {
     window.location.reload();
 });
 btn3.addEventListener('click', e => {
-    localStorage.setItem("level", random(100, 999999999));
+    localStorage.setItem("level", 480136489);
     window.location.reload();
 });
 btn4.addEventListener('click', e => {
+    localStorage.setItem("level", random(100, 999999999));
+    window.location.reload();
+});
+btn5.addEventListener('click', e => {
     window.location.reload();
 });
 inptSeed.addEventListener("keypress", e => {
@@ -235,3 +262,42 @@ inptSeed.addEventListener("keypress", e => {
         window.location.reload();
     }
 });
+lblSeed.addEventListener("click", e => {
+    lblSeed.select();
+    document.execCommand('copy');
+    alert("Copied!");
+});
+menu.addEventListener("mouseenter", e => {
+    isPressed = false;
+});
+menu.addEventListener("mousedown", e => {
+    setTimeout(() => isPressed = false, 1);
+    
+})
+volume.addEventListener("change", e => {
+    music.setVolume(volume.value);
+    localStorage.setItem("volume", volume.value);
+})
+
+
+// Music
+
+const tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+const firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+function onYouTubeIframeAPIReady() {
+    // iframeId parameter should match your Iframe's id attribute
+    music = new YT.Player('music', {
+      width: 140,
+      height: 105,
+      videoId: 'wHGIlstqXMA',
+      events: {
+        'onReady': function (event) {
+          event.target.setVolume(localStorage.getItem("volume"));
+          event.target.playVideo();
+        }
+      }
+    });
+}
